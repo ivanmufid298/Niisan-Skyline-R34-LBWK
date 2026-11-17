@@ -12,6 +12,7 @@ export async function start() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x464d52);
+  scene.fog = new THREE.Fog(0x464d52, 18, 45);
   const environment = await new EXRLoader().loadAsync(new URL('./studio.exr', import.meta.url).href);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromEquirectangular(environment).texture;
@@ -21,6 +22,7 @@ export async function start() {
   const key = new THREE.DirectionalLight(0xfff2db, 1.3);
   key.position.set(-3, 6, 4);
   scene.add(key);
+  scene.add(new THREE.HemisphereLight(0xe7edff, 0x3c3832, 0.65));
 
   const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 100);
   const controls = new OrbitControls(camera, canvas);
@@ -77,7 +79,7 @@ export async function start() {
     const fov = THREE.MathUtils.degToRad(camera.fov / 2);
     const fit = radius / Math.sin(Math.min(fov, Math.atan(Math.tan(fov) * camera.aspect)));
     controls.target.copy(center);
-    camera.position.copy(center).addScaledVector(new THREE.Vector3(1, 0.42, 1.35).normalize(), fit * 1.04);
+    camera.position.copy(center).addScaledVector(new THREE.Vector3(1, 0.42, 1.35).normalize(), fit * (camera.aspect >= 1.3 ? 0.85 : 1.04));
     controls.minDistance = radius * 0.85;
     controls.maxDistance = fit * 2.5;
     camera.far = controls.maxDistance * 3;
